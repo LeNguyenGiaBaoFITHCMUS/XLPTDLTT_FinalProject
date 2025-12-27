@@ -1,0 +1,8 @@
+# Không làm việc với nhánh main (nhánh main chỉ để pull request kết quả cuối cùng)
+
+# Luôn ở nhánh dev trước khi làm việc
+## Từ nhánh dev, git checkout -b <new_branch> với cú pháp: feature/task (task có thể là kafka, spark, hadoop, airflow)
+## Ví dụ, từ nhánh dev: git checkout -b feature/kafka (để thực hiện yêu cầu 1)
+## Sau khi làm xong và push thì lên Github tạo Pull Request từ nhánh feature/task vào nhánh dev
+
+# Nhớ fetch và pull thường xuyên để cập nhật code
