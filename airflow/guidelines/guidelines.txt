@@ -1,0 +1,30 @@
+# Cấu hình thư mục như sau (cái nào đã có sau khi pull từ Github thì bỏ qua):
+Project/
+├── docker-compose.yml           # File cấu hình Docker
+├── Dockerfile                   # File cài thư viện cho Spark
+├── apps/                        # [QUAN TRỌNG] Nơi chứa Code & Dữ liệu đầu vào
+│   ├── User0_credit_card_transactions.csv  # File csv của thầy
+│   ├── producer.py              # Code giả lập máy POS gửi tin
+│   └── spark_streaming.py       # Code xử lý dữ liệu
+├── data/                        # Nơi Hadoop lưu trữ dữ liệu (Database)
+│   ├── namenode/                # Để trống, Hadoop tự sinh file
+│   └── datanode/                # Để trống, Hadoop tự sinh file
+└── airflow/                     # Nơi chứa lịch chạy (Workflow)
+    ├── dags/                    # Chứa code lập lịch Airflow
+    └── logs/                    # Chứa log chạy của Airflow
+
+# Chạy setup môi trường (cho WSL Ubuntu-24.04):
+## setup compose (cần sudo để lấy quyền admin)
+sudo docker compose up --build -d
+
+## xóa compose (nếu cần build lại cái mới)
+sudo docker-compose down
+
+# chạy producer kafka
+sudo docker exec -it spark-master python3 /opt/spark/apps/producer.py
+
+# chạy consumer kafka (chủ yếu để test coi thành công chưa)
+sudo docker exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic transactions \
+  --from-beginning
