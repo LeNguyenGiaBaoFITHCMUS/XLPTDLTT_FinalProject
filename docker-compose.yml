@@ -1,0 +1,109 @@
+services:
+  # Kafka (KRaft Mode - NO Zookeeper)
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      # Xác định vai trò của node này là cả Broker và Controller (thay thế Zookeeper)
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      
+      # Cấu hình Listeners
+      # CONTROLLER: Giao tiếp nội bộ cho metadata (thay ZK)
+      # PLAINTEXT: Giao tiếp nội bộ giữa các container (Spark -> Kafka) qua port 29092
+      # PLAINTEXT_HOST: Giao tiếp từ máy ngoài (Máy thật -> Docker) qua port 9092
+      KAFKA_LISTENERS: PLAINTEXT://:29092,CONTROLLER://:9093,PLAINTEXT_HOST://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      
+      # Các cấu hình phụ trợ
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    networks:
+      - data-network
+
+  # Hadoop
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    ports:
+      - "9870:9870" # Map cổng giao diện web của Namenode
+      - "9000:9000" # Map cổng RPC để giao tiếp với Datanode và các client
+    environment:
+      - CLUSTER_NAME=test
+    volumes:
+      - ./data/namenode:/hadoop/dfs/name
+    networks:
+      - data-network
+
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode
+    depends_on:
+      - namenode
+    environment:
+      - SERVICE_PRECONDITION=namenode:9870
+    volumes:
+      - ./data/datanode:/hadoop/dfs/data
+    networks:
+      - data-network
+
+  # Spark (Build custom image từ Dockerfile)
+  spark-master:
+    build: .
+    image: my-spark-custom:3.3.3
+    container_name: spark-master
+    ports:
+      - "8080:8080" # Master UI
+      - "7077:7077"
+    environment:
+      - SPARK_MODE=master
+    # Ép Spark Master chạy class Java cụ thể, không bị exit
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master --ip 0.0.0.0 --port 7077 --webui-port 8080
+    volumes:
+      - ./apps:/opt/spark/apps
+    networks:
+      - data-network
+
+  spark-worker:
+    image: my-spark-custom:3.3.3
+    container_name: spark-worker
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_MEMORY=1G
+    # Ép Spark Worker kết nối tới Master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    volumes:
+      - ./apps:/opt/spark/apps
+    networks:
+      - data-network
+
+  # Airflow
+  airflow:
+    image: apache/airflow:2.8.1-python3.10
+    container_name: airflow
+    ports:
+      - "8085:8080"
+    user: root
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+    command: standalone
+    networks:
+      - data-network
+
+networks:
+  data-network:
+    driver: bridge

@@ -1,0 +1,6 @@
+# Bỏ qua thư mục logs của Airflow
+airflow/logs/
+
+# Bỏ qua dữ liệu trong thư mục data
+/data/namenode/
+/data/datanode/
