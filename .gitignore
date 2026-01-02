@@ -4,3 +4,5 @@ airflow/logs/
 # Bỏ qua dữ liệu trong thư mục data
 /data/namenode/
 /data/datanode/
+
+*__pycache__/
