@@ -60,7 +60,7 @@ services:
     image: my-spark-custom:3.3.3
     container_name: spark-master
     ports:
-      - "8080:8080" # Master UI
+      - "8081:8080" # Master UI
       - "7077:7077"
     environment:
       - SPARK_MODE=master
@@ -95,11 +95,14 @@ services:
       - "8085:8080"
     user: root
     environment:
-      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__WEBSERVER__USERNAME=admin  # Tên người dùng
+      - AIRFLOW__WEBSERVER__PASSWORD=admin  # Mật khẩu
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
+      - /var/run/docker.sock:/var/run/docker.sock
     command: standalone
     networks:
       - data-network
