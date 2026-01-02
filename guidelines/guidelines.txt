@@ -28,3 +28,6 @@ sudo docker exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh \
   --bootstrap-server localhost:9092 \
   --topic transactions \
   --from-beginning
+
+# chay spark de consume va xu ly 
+sudo docker exec -u root -it spark-master python3 /opt/spark/apps/spark_streaming.py
