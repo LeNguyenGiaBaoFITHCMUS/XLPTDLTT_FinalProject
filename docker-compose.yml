@@ -32,25 +32,30 @@ services:
   namenode:
     image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
     container_name: namenode
+    hostname: namenode
     ports:
       - "9870:9870" # Map cổng giao diện web của Namenode
-      - "9000:9000" # Map cổng RPC để giao tiếp với Datanode và các client
+      - "8020:8020" # Map cổng RPC (port mặc định của Hadoop)
     environment:
       - CLUSTER_NAME=test
     volumes:
       - ./data/namenode:/hadoop/dfs/name
+      - ./apps:/opt/spark/apps
     networks:
       - data-network
 
   datanode:
     image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
     container_name: datanode
+    hostname: datanode
     depends_on:
       - namenode
     environment:
       - SERVICE_PRECONDITION=namenode:9870
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
     volumes:
       - ./data/datanode:/hadoop/dfs/data
+      - ./hadoop-config/core-site.xml:/etc/hadoop/core-site.xml:ro
     networks:
       - data-network
 
