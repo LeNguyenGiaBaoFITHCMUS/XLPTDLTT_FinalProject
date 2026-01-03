@@ -39,6 +39,7 @@ services:
       - CLUSTER_NAME=test
     volumes:
       - ./data/namenode:/hadoop/dfs/name
+      - ./apps:/opt/spark/apps
     networks:
       - data-network
 
