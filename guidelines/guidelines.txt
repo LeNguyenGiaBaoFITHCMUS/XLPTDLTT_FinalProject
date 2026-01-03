@@ -2,16 +2,30 @@
 Project/
 ├── docker-compose.yml           # File cấu hình Docker
 ├── Dockerfile                   # File cài thư viện cho Spark
+├── hadoop-config/               # Cấu hình Hadoop
+│   └── core-site.xml           # Fix DataNode connection
 ├── apps/                        # [QUAN TRỌNG] Nơi chứa Code & Dữ liệu đầu vào
 │   ├── User0_credit_card_transactions.csv  # File csv của thầy
 │   ├── producer.py              # Code giả lập máy POS gửi tin
-│   └── spark_streaming.py       # Code xử lý dữ liệu
+│   ├── spark_streaming.py       # Code xử lý real-time và LƯU VÀO HDFS
+│   ├── daily_aggregate.py       # Code phân tích hàng ngày (8 loại phân tích)
+│   └── export_powerbi.py        # Code export cho Power BI
 ├── data/                        # Nơi Hadoop lưu trữ dữ liệu (Database)
 │   ├── namenode/                # Để trống, Hadoop tự sinh file
 │   └── datanode/                # Để trống, Hadoop tự sinh file
-└── airflow/                     # Nơi chứa lịch chạy (Workflow)
-    ├── dags/                    # Chứa code lập lịch Airflow
-    └── logs/                    # Chứa log chạy của Airflow
+├── airflow/                     # Nơi chứa lịch chạy (Workflow)
+│   ├── dags/                    # Chứa code lập lịch Airflow
+│   └── logs/                    # Chứa log chạy của Airflow
+└── PIPELINE_GUIDE.md            # Hướng dẫn chạy chi tiết
+
+# HDFS Structure (tự động tạo bởi pipeline):
+/
+├── datalake/
+│   └── transactions_clean/      # Dữ liệu clean từ Spark Streaming (Parquet)
+├── warehouse/                   # Kết quả 8 loại phân tích (CSV)
+├── powerbi/                     # Export cho Power BI (CSV)
+└── checkpoints/                 # Spark Streaming checkpoints
+
 
 # Chạy setup môi trường (cho WSL Ubuntu-24.04):
 ## setup compose (cần sudo để lấy quyền admin)
