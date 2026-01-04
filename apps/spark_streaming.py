@@ -155,6 +155,8 @@ class USDRateManager:
 
 usd_manager = USDRateManager()
 
+HDFS_OUTPUT_PATH = "hdfs://namenode:8020/datalake/transactions_clean"
+
 # Hàm xử lý từng batch với tỷ giá cập nhật
 def process_batch(batch_df, batch_id): # Thêm batch_id để khớp với yêu cầu Spark và tránh lỗi
     if batch_df.count() > 0:
@@ -190,15 +192,15 @@ def process_batch(batch_df, batch_id): # Thêm batch_id để khớp với yêu 
             .mode("append") \
             .format("parquet") \
             .partitionBy("ds") \
-            .save("hdfs://namenode:9000/datalake/transactions_clean")
+            .save(HDFS_OUTPUT_PATH)
 
 # Ghi vào HDFS với foreachBatch
 query = processed_df.writeStream \
     .foreachBatch(process_batch) \
-    .option("checkpointLocation", "hdfs://namenode:9000/datalake/checkpoints/transactions_clean") \
+    .option("checkpointLocation", "hdfs://namenode:8020/datalake/checkpoints/transactions_clean") \
     .start()
 
-print(f"[INFO] Spark Streaming đang ghi dữ liệu vào HDFS: hdfs://namenode:9000/datalake/transactions_clean")
+print(f"[INFO] Spark Streaming đang ghi dữ liệu vào HDFS: {HDFS_OUTPUT_PATH}")
 print("[INFO] Dữ liệu được partition theo ngày (ds) để dễ phân tích")
 print("[INFO] Nhấn Ctrl+C để dừng...")
 
