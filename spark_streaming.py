@@ -135,15 +135,18 @@ if current_time - last_time > 600:
     last_time = current_time
 
 final_df = time_df.withColumn('Amount', round(col('Amount') * USD_price))
-query = final_df.writeStream \
-    .outputMode("append") \
-    .format("csv") \
-    .option("path", "hdfs://namenode:8020/data/transactions_vnd") \
-    .option("checkpointLocation", "hdfs://namenode:8020/data/checkpoints/transactions_vnd") \
-    .option("header", "true") \
+
+query = (final_df.writeStream
+    .format("csv")
+    .outputMode("append")
+    .option("path", "hdfs://namenode:8020/data/transactions_vnd_csv")
+    .option("checkpointLocation", "hdfs://namenode:8020/data/checkpoints/transactions_vnd_csv")
+    .option("header", "true")
+    .option("delimiter", ",")
+    .option("quote", "\"")
+    .option("escape", "\"")
     .start()
-# =======================================================================
+)
 
 # LỆNH QUAN TRỌNG: Giữ chương trình chạy liên tục
 query.awaitTermination()
-
