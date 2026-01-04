@@ -37,6 +37,9 @@ services:
       - "9000:9000" # Map cổng RPC để giao tiếp với Datanode và các client
     environment:
       - CLUSTER_NAME=test
+      # Cấu hình để Hadoop biết địa chỉ của nó
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+      - HDFS_CONF_dfs_namenode_rpc_address=namenode:9000
     volumes:
       - ./data/namenode:/hadoop/dfs/name
     networks:
@@ -49,6 +52,8 @@ services:
       - namenode
     environment:
       - SERVICE_PRECONDITION=namenode:9870
+      # Cấu hình để đồng bộ với Namenode
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
     volumes:
       - ./data/datanode:/hadoop/dfs/data
     networks:

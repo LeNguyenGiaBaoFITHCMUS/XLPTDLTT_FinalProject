@@ -1,7 +1,7 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.chrome.options import Options # Thêm dòng này
+from selenium.webdriver.chrome.options import Options 
 from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
 from selenium.webdriver.support.ui import WebDriverWait
@@ -42,7 +42,7 @@ def get_USD_price ():
 
     row = rows[1]
     cols = row.find_all("td")
-        # Kiểm tra xem dòng đó có đủ cột không (tránh lấy nhầm dòng tiêu đề hoặc dòng trống)
+    # Kiểm tra xem dòng đó có đủ cột không (tránh lấy nhầm dòng tiêu đề hoặc dòng trống)
     if len(cols) >= 5:
         currency = cols[0].get_text(strip=True)
         buy_cash = cols[2].get_text(strip=True)
@@ -57,6 +57,7 @@ def get_USD_price ():
 
     df = pd.DataFrame(data)
     return float(df.loc[0, 'Mua tiền mặt'].replace(',', ''))
+
 def get_usd_rate_api():
     url = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json"
     response = requests.get(url, timeout=10)
@@ -68,7 +69,8 @@ def get_usd_rate_api():
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_json, col, regexp_replace
 from pyspark.sql.types import StructType, StructField, StringType
-from pyspark.sql.functions import concat_ws, lpad, to_date, concat,lit,round
+from pyspark.sql.functions import concat_ws, lpad, to_date, concat, lit, round, date_format, current_timestamp
+
 # 1. Khởi tạo Spark Session
 spark = SparkSession.builder \
     .appName("KafkaHadoopStreaming") \
@@ -98,7 +100,6 @@ schema = StructType([
 
 # 3. Đọc dữ liệu từ Kafka
 # Lưu ý: dùng kafka:29092 vì Spark đang chạy trong mạng Docker
-last_time = 0
 df = spark.readStream \
     .format("kafka") \
     .option("kafka.bootstrap.servers", "kafka:29092") \
@@ -121,25 +122,85 @@ clean_df = clean_df.withColumn("User", col("User").cast("int")) \
                     .withColumn("Card", col("Card").cast("int")) \
                     .withColumn("Amount", col("Amount").cast("float")) \
                     .withColumn("MCC", col("MCC").cast("int"))
-clean_df = clean_df.filter(col("Is Fraud?") == "No")
-date_df = clean_df.withColumn("Date", concat_ws("/", lpad(col("Day"), 2, "0"), lpad(col("Month"), 2, "0"), col("Year"))).drop("Day")
-date_df = date_df.withColumn("Date", to_date(col("Date"), "dd/MM/yyyy"))
-time_df = date_df.withColumn("Time", concat(col("Time"), lit(":00")))
-current_time = time.time()
-if current_time - last_time > 600:
-    try:
-        USD_price = get_usd_rate_api()
-    except:
-        USD_price = get_USD_price()
-    
-    last_time = current_time
 
-final_df = time_df.withColumn('Amount', round(col('Amount') * USD_price))
-query = final_df.writeStream \
-    .outputMode("append") \
-    .format("console") \
-    .option("truncate", "false") \
+# GIỮ LẠI TẤT CẢ GIAO DỊCH (cả fraud và non-fraud) để phân tích
+# Không filter bỏ fraud nữa vì cần phân tích xu hướng fraud (yêu cầu 4, 7)
+
+# Xử lý cột Date và Time
+processed_df = clean_df.withColumn("Date", concat_ws("/", lpad(col("Day"), 2, "0"), lpad(col("Month"), 2, "0"), col("Year"))).drop("Day", "Month", "Year")
+processed_df = processed_df.withColumn("Date", to_date(col("Date"), "dd/MM/yyyy"))
+processed_df = processed_df.withColumn("Time", concat(col("Time"), lit(":00")))
+
+# Quản lý tỷ giá USD với cập nhật hàng ngày
+class USDRateManager:
+    def __init__(self):
+        self.rate = None
+        self.last_update = 0
+        self.update_rate()
+    
+    def update_rate(self):
+        try:
+            self.rate = get_usd_rate_api()
+        except:
+            self.rate = get_USD_price()
+        self.last_update = time.time()
+        print(f"Đã cập nhật tỷ giá USD: {self.rate} VND")
+    
+    def get_rate(self):
+        # Cập nhật nếu đã quá 24 giờ (86400 giây)
+        # if time.time() - self.last_update > 86400:
+        if time.time() - self.last_update > 20: # Demo thử nghiệm trong 20 giây
+            self.update_rate()
+        return self.rate
+
+usd_manager = USDRateManager()
+
+# Hàm xử lý từng batch với tỷ giá cập nhật
+def process_batch(batch_df, batch_id): # Thêm batch_id để khớp với yêu cầu Spark và tránh lỗi
+    if batch_df.count() > 0:
+        # Lấy tỷ giá
+        current_rate = usd_manager.get_rate()
+        
+        # Chuyển đổi Amount từ USD sang VND
+        result_df = batch_df.withColumn('amount_vnd', round(col('Amount') * current_rate).cast("int"))
+        
+        # Thêm cột partition theo ngày (ds) để dễ query và phân tích
+        result_df = result_df.withColumn("ds", date_format(col("Date"), "yyyy-MM-dd"))
+        
+        # Đổi tên cột để chuẩn hóa (lowercase, snake_case)
+        result_df = result_df.withColumnRenamed("User", "user_id") \
+                           .withColumnRenamed("Card", "card_id") \
+                           .withColumnRenamed("Time", "time") \
+                           .withColumnRenamed("Amount", "amount_usd") \
+                           .withColumnRenamed("Use Chip", "use_chip") \
+                           .withColumnRenamed("Merchant Name", "merchant_name") \
+                           .withColumnRenamed("Merchant City", "merchant_city") \
+                           .withColumnRenamed("Merchant State", "merchant_state") \
+                           .withColumnRenamed("Zip", "zip") \
+                           .withColumnRenamed("MCC", "mcc") \
+                           .withColumnRenamed("Errors?", "has_errors") \
+                           .withColumnRenamed("Is Fraud?", "is_fraud") \
+                           .withColumnRenamed("Date", "transaction_date")
+        
+        # Thêm timestamp xử lý
+        result_df = result_df.withColumn("processed_at", current_timestamp())
+        
+        # Ghi vào HDFS dạng Parquet, partition theo ngày
+        result_df.write \
+            .mode("append") \
+            .format("parquet") \
+            .partitionBy("ds") \
+            .save("hdfs://namenode:9000/datalake/transactions_clean")
+
+# Ghi vào HDFS với foreachBatch
+query = processed_df.writeStream \
+    .foreachBatch(process_batch) \
+    .option("checkpointLocation", "hdfs://namenode:9000/datalake/checkpoints/transactions_clean") \
     .start()
+
+print(f"[INFO] Spark Streaming đang ghi dữ liệu vào HDFS: hdfs://namenode:9000/datalake/transactions_clean")
+print("[INFO] Dữ liệu được partition theo ngày (ds) để dễ phân tích")
+print("[INFO] Nhấn Ctrl+C để dừng...")
 
 # LỆNH QUAN TRỌNG: Giữ chương trình chạy liên tục
 query.awaitTermination()

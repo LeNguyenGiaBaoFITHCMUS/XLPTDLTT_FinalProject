@@ -9,8 +9,6 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libnss3 \
     libgbm1 \
-    libasound2 \
-    fonts-liberation \
     libatk-bridge2.0-0 \
     libgtk-3-0 \
     && apt-get clean \

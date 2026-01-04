@@ -15,10 +15,18 @@ Project/
 
 # Chạy setup môi trường (cho WSL Ubuntu-24.04):
 ## setup compose (cần sudo để lấy quyền admin)
+## cần --build khi: thay đổi code trong apps/Dockerfile/.yml/cài thêm thư viện/...
 sudo docker compose up --build -d
 
-## xóa compose (nếu cần build lại cái mới)
-sudo docker-compose down
+## nếu chỉ cần restart sau khi tắt máy
+sudo docker compose up -d
+
+## xóa compose (khi cần xóa sạch mọi thứ kể cả volumes và networks để build lại cái mới)
+sudo docker compose down
+
+## khởi động/dừng nhanh chóng hằng ngày
+sudo docker compose start
+sudo docker compose stop
 
 # chạy producer kafka
 sudo docker exec -it spark-master python3 /opt/spark/apps/producer.py
@@ -29,5 +37,5 @@ sudo docker exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh \
   --topic transactions \
   --from-beginning
 
-# chay spark de consume va xu ly 
+# chạy spark để consume và xử lý
 sudo docker exec -u root -it spark-master python3 /opt/spark/apps/spark_streaming.py
