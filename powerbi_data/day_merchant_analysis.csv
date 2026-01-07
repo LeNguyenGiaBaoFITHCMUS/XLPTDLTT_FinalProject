@@ -1,0 +1,4 @@
+merchant_name,merchant_city,merchant_state,transaction_count,total_amount_vnd,avg_amount_vnd,max_amount_vnd,unique_customers
+-727612092139916043,Monterey Park,CA,1,2699618,2699618.0,2699618,1
+4060646732831064559,La Verne,CA,1,1220793,1220793.0,1220793,1
+-5475680618560174533,Monterey Park,CA,1,957505,957505.0,957505,1
