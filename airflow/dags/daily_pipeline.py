@@ -39,8 +39,16 @@ with DAG(
         task_id="verify_hdfs_output",
         bash_command="""
         set -e
-        docker exec namenode hdfs dfs -ls /powerbi/daily_merchant_stats_latest || true
+        docker exec namenode hdfs dfs -ls /powerbi || true
         """,
     )
 
-    daily_aggregate >> export_powerbi >> verify_output
+    download_to_local = BashOperator(
+        task_id="download_to_local",
+        bash_command="""
+        set -e
+        docker exec airflow /bin/bash /opt/airflow/dags/download_powerbi_data.sh
+        """,
+    )
+
+    daily_aggregate >> export_powerbi >> verify_output >> download_to_local
