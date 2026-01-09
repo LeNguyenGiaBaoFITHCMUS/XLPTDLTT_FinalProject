@@ -13,18 +13,31 @@ def rename_part_file(spark, temp_path, final_path):
     fs = sc._jvm.org.apache.hadoop.fs.FileSystem.get(java_uri, sc._jsc.hadoopConfiguration())
     Path = sc._jvm.org.apache.hadoop.fs.Path
 
-    # Tìm file part- trong thư mục tạm
+    # KIỂM TRA VÀ XÓA FILE ĐÍCH CŨ (QUAN TRỌNG)
+    dest_path_obj = Path(final_path)
+    if fs.exists(dest_path_obj):
+        fs.delete(dest_path_obj, False) # False: không cần xóa đệ quy vì là file đơn
+        print(f"[Info] Đã xóa file cũ: {final_path}")
+
+    # Tìm file part- trong thư mục tạm để di chuyển
     src_path_obj = Path(temp_path)
     if fs.exists(src_path_obj):
         files = fs.listStatus(src_path_obj)
+        found = False
         for f in files:
             file_name = f.getPath().getName()
-            # Tìm file bắt đầu bằng part- và có đuôi .csv
             if file_name.startswith("part-") and file_name.endswith(".csv"):
                 # Di chuyển và đổi tên file
-                fs.rename(f.getPath(), Path(final_path))
-                print(f"-> Đã đổi tên thành công")
+                success = fs.rename(f.getPath(), dest_path_obj)
+                if success:
+                    print(f"-> Đã đổi tên thành công")
+                else:
+                    print(f"[ERROR] Không thể đổi tên file sang {final_path}")
+                found = True
                 break
+        
+        if not found:
+            print(f"[WARN] Không tìm thấy file part- csv nào trong {temp_path}")
         
         # Xóa thư mục tạm sau khi đã lấy file
         fs.delete(src_path_obj, True)

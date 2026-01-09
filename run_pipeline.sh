@@ -25,7 +25,7 @@ check_permissions() {
     
     if [ "$needs_fix" = true ]; then
         echo -e "${YELLOW} Phát hiện quyền chưa đúng, đang fix...${NC}"
-        docker exec namenode hdfs dfs -chmod 777 /datalake /warehouse /powerbi /checkpoints 2>/dev/null
+        docker exec namenode hdfs dfs -chmod 777 /datalake /warehouse /powerbi 2>/dev/null
         echo -e "${GREEN}✓ Đã fix permissions${NC}"
     fi
 }
@@ -159,9 +159,9 @@ run_all() {
         sleep 2
         run_export
         sleep 2
-        save_powerbi_data_to_local
-        sleep 2
         show_results
+        sleep 2
+        save_powerbi_data_to_local
     else
         echo "Vui lòng chạy Producer và Streaming trước!"
     fi
