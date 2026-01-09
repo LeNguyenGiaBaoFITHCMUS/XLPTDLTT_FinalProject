@@ -18,7 +18,7 @@ if [ ! -d "$POWERBI_DIR" ]; then
     echo "[INFO] Đã tạo thư mục: $POWERBI_DIR"
 else
     echo "[INFO] Đã có thư mục: $POWERBI_DIR, xóa dữ liệu cũ trong thư mục"
-    rm -rf "$POWERBI_DIR/*"
+    rm -rf $POWERBI_DIR/*
 fi
 
 echo "Bắt đầu download từ HDFS..."

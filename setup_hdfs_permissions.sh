@@ -38,7 +38,7 @@ echo ""
 
 echo "Kiểm tra quyền:"
 echo ""
-docker exec namenode hdfs dfs -ls -d /datalake /warehouse /powerbi /checkpoints
+docker exec namenode hdfs dfs -ls -d /datalake /warehouse /powerbi
 
 echo ""
 echo "=================================================="

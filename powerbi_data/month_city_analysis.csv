@@ -1,4 +1,6 @@
 merchant_city,merchant_state,transaction_count,total_amount_vnd,avg_amount_vnd
-La Verne,CA,3,5283621,1761207.0
-Monterey Park,CA,3,4469058,1489686.0
-Mira Loma,CA,1,3661328,3661328.0
+La Verne,CA,22,38781151,1762779.5909090908
+Mira Loma,CA,6,6267963,1044660.5
+Monterey Park,CA,4,3225577,806394.25
+Ontario,CA,1,1041239,1041239.0
+ONLINE,,1,199509,199509.0
