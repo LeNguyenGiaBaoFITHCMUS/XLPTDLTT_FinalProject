@@ -47,7 +47,9 @@ with DAG(
         task_id="download_to_local",
         bash_command="""
         set -e
-        docker exec airflow /bin/bash /opt/airflow/dags/download_powerbi_data.sh
+        cd /opt/airflow
+        python3 /opt/spark/apps/download_powerbi.py
+        echo "Đã download dữ liệu vào ./powerbi_data/"
         """,
     )
 

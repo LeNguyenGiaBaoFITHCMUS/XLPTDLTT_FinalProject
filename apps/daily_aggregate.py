@@ -220,6 +220,27 @@ def main():
         .csv(f"{HDFS_WAREHOUSE}/user_analysis"))
     
     print("[V] Phân tích user behavior - Hoàn thành")
+
+    # Phân tích người dùng có nhiều giao dịch liên tiếp (cùng hour + ds)
+    df_with_hour = df.withColumn("hour", hour(col("time")))
+    user_frequent_stats = (df_with_hour.groupBy("ds", "hour", "user_id")
+                          .agg(Fcount("*").alias("transaction_count"))
+                          .filter(col("transaction_count") > 1)  # Lọc >1 giao dịch
+                          .groupBy("user_id")
+                          .agg(
+                              Fcount("*").alias("frequent_hour_count"),
+                              Fsum("transaction_count").alias("total_rapid_transactions"),
+                              Favg("transaction_count").alias("avg_txn_per_hour")
+                          )
+                          .orderBy(desc("frequent_hour_count")))
+    
+    (user_frequent_stats.write
+        .mode("overwrite")
+        .option("header", "true")
+        .csv(f"{HDFS_WAREHOUSE}/user_frequent"))
+    
+    print("[V] Phân tích người dùng giao dịch liên tiếp - Hoàn thành")
+    
     
     # ============================================================
     # YÊU CẦU 5: Giao dịch GIÁ TRỊ LỚN - Tìm pattern của giao dịch lớn
