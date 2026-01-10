@@ -69,6 +69,7 @@ def main():
         ("merchant_analysis/month", "month_merchant_analysis"),
         ("merchant_analysis/year", "year_merchant_analysis"),
         ("user_analysis", "user_analysis"),
+        ("user_frequent", "user_frequent"),
         ("high_value_analysis/day", "day_high_value_analysis"),
         ("high_value_analysis/month", "month_high_value_analysis"),
         ("high_value_analysis/year", "year_high_value_analysis"),

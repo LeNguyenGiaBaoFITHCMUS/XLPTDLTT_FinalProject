@@ -98,17 +98,17 @@ services:
     container_name: airflow
     ports:
       - "8085:8080"
-    user: root
     environment:
       - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
-      - AIRFLOW__WEBSERVER__USERNAME=admin  # Tên người dùng
-      - AIRFLOW__WEBSERVER__PASSWORD=admin  # Mật khẩu
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - /var/run/docker.sock:/var/run/docker.sock
-    command: standalone
+      - ./powerbi_data:/opt/airflow/powerbi_data
+      - ./airflow/init-airflow.sh:/usr/local/bin/init-airflow.sh
+      - ./apps:/opt/spark/apps  # Mount apps folder
+    command: bash /usr/local/bin/init-airflow.sh
     networks:
       - data-network
 
