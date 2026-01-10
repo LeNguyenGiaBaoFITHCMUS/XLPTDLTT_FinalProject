@@ -79,8 +79,8 @@ run_cmd(f"docker exec namenode rm -rf {TEMP_DIR}")
 
 # Kiểm tra kết quả
 files = [f for f in os.listdir(LOCAL_DIR) if f.endswith('.csv')]
-print(f"\n✅ Đã download {len(files)} files")
-print(f"📁 Location: {LOCAL_DIR} (mapped to ./powerbi_data on host)")
+print(f"Đã download {len(files)} files")
+print(f"Location: {LOCAL_DIR} (mapped to ./powerbi_data on host)")
 if len(files) > 0:
     for f in sorted(files)[:10]:  # Show first 10
         size = os.path.getsize(os.path.join(LOCAL_DIR, f))

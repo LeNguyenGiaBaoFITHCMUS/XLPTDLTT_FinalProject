@@ -49,7 +49,7 @@ with DAG(
         set -e
         cd /opt/airflow
         python3 /opt/spark/apps/download_powerbi.py
-        echo "✅ Đã download dữ liệu vào ./powerbi_data/"
+        echo "Đã download dữ liệu vào ./powerbi_data/"
         """,
     )
 
