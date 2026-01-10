@@ -96,6 +96,7 @@ services:
   airflow:
     image: apache/airflow:2.8.1-python3.10
     container_name: airflow
+    user: "0:0"  # Chạy với root để có quyền docker.sock
     ports:
       - "8085:8080"
     environment:

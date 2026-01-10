@@ -151,7 +151,7 @@ docker exec -it spark-master python3 /opt/spark/apps/producer.py
 Mở terminal mới và chạy:
 
 ```bash
-docker exec -u root -it spark-master spark-submit \
+docker exec -u root -it spark-master /opt/spark/bin/spark-submit \
   --master spark://spark-master:7077 \
   --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.3 \
   /opt/spark/apps/spark_streaming.py
