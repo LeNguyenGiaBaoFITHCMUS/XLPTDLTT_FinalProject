@@ -149,7 +149,7 @@ class USDRateManager:
     def get_rate(self):
         # Cập nhật nếu đã quá 24 giờ (86400 giây)
         # if time.time() - self.last_update > 86400:
-        if time.time() - self.last_update > 20: # Demo thử nghiệm trong 20 giây
+        if time.time() - self.last_update > 300: # Demo thử nghiệm trong 300 giây
             self.update_rate()
         return self.rate
 

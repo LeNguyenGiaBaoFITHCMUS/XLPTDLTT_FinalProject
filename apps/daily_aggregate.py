@@ -526,7 +526,7 @@ def main():
                          countDistinct("user_id").alias("unique_users"),
                          countDistinct("merchant_name").alias("unique_merchants"),
                          countDistinct("merchant_city").alias("unique_cities"),
-                         Fsum(when(col("has_errors") == "Yes", 1).otherwise(0)).alias("error_transactions"),
+                         Fsum(when(col("has_errors") != "", 1).otherwise(0)).alias("error_transactions"),
                          Fsum(when(col("is_fraud") == "Yes", 1).otherwise(0)).alias("fraud_transactions"),
                          Fmax("amount_vnd").alias("max_transaction_vnd"),
                          Fmin("amount_vnd").alias("min_transaction_vnd")

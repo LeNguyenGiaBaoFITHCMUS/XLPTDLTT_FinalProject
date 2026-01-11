@@ -38,7 +38,8 @@ def run_producer():
                 print(f"[{count}] Đã gửi giao dịch: User {row.get('User', 'N/A')} - Amount: {row.get('Amount', 'N/A')}")
                 
                 # Yêu cầu đề bài: Random thời gian từ 1s đến 5s
-                sleep_time = random.uniform(1, 5)
+                # sleep_time = random.uniform(1, 5)
+                sleep_time = random.uniform(0.1, 0.5)  # Thử nghiệm nhanh hơn
                 time.sleep(sleep_time)
                 
     except KeyboardInterrupt:

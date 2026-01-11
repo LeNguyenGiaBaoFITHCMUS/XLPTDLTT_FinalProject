@@ -22,7 +22,7 @@ docker compose up --build -d
 ## nếu chỉ cần restart sau khi tắt máy
 docker compose up -d
 
-## xóa compose (khi cần xóa sạch mọi thứ kể cả volumesvolumes, networks và images để build lại cái mới)
+## xóa compose (khi cần xóa sạch mọi thứ kể cả volumes, networks và images để build lại cái mới)
 docker compose down -v --rmi all
 
 ## khởi động/dừng nhanh chóng hằng ngày
@@ -89,3 +89,9 @@ docker exec spark-master spark-submit /opt/spark/apps/export_powerbi.py
 chmod +x airflow/dags/download_powerbi_data.sh
 ## chạy
 ./airflow/dags/download_powerbi_data.sh
+
+# ==================================================
+
+# setup airflow trước khi chạy
+chmod +x fix_permissions.sh
+./fix_permissions.sh
