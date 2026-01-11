@@ -1,5 +1,0 @@
-merchant_name,merchant_city,merchant_state,transaction_count,total_amount_vnd,avg_amount_vnd,max_amount_vnd,unique_customers
-5817218446178736267,La Verne,CA,1,4647191,4647191.0,4647191,1
-6654290286221782850,ONLINE,,1,4418913,4418913.0,4418913,1
-4060646732831064559,La Verne,CA,3,2973676,991225.3333333334,1811220,1
--34551508091458520,La Verne,CA,1,91101,91101.0,91101,1

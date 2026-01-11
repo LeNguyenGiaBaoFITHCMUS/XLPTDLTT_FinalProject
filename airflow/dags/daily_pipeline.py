@@ -23,7 +23,7 @@ with DAG(
         task_id="daily_aggregate",
         bash_command="""
         set -e
-        docker exec spark-master spark-submit /opt/spark/apps/daily_aggregate.py
+        docker exec spark-master /opt/spark/bin/spark-submit /opt/spark/apps/daily_aggregate.py
         """,
     )
 
@@ -31,7 +31,7 @@ with DAG(
         task_id="export_powerbi",
         bash_command="""
         set -e
-        docker exec spark-master spark-submit /opt/spark/apps/export_powerbi.py
+        docker exec spark-master /opt/spark/bin/spark-submit /opt/spark/apps/export_powerbi.py
         """,
     )
 
