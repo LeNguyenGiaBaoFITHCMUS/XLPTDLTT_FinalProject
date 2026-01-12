@@ -79,7 +79,7 @@ spark = SparkSession.builder \
 # Giảm bớt log thừa để dễ quan sát dữ liệu
 spark.sparkContext.setLogLevel("WARN")
 
-# 2. Định nghĩa Schema khớp chính xác với dữ liệu bạn nhận được từ Kafka
+# 2. Định nghĩa Schema khớp chính xác với dữ liệu nhận được từ Kafka
 schema = StructType([
     StructField("User", StringType(), True),
     StructField("Card", StringType(), True),
@@ -149,7 +149,7 @@ class USDRateManager:
     def get_rate(self):
         # Cập nhật nếu đã quá 24 giờ (86400 giây)
         # if time.time() - self.last_update > 86400:
-        if time.time() - self.last_update > 300: # Demo thử nghiệm trong 300 giây
+        if time.time() - self.last_update > 60: # Demo thử nghiệm trong 60 giây
             self.update_rate()
         return self.rate
 
