@@ -1,4 +1,3 @@
-```markdown name=README.md url=https://github.com/LeNguyenGiaBaoFITHCMUS/XLPTDLTT_FinalProject
 # Hệ Thống Phân Tích Giao Dịch Thẻ Tín Dụng Thời Thực
 
 ## 📋 Mô Tả Dự Án
@@ -7,7 +6,7 @@
 
 **Kiến trúc Pipeline:**
 ![alt text](architecture.png)
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                          REAL-TIME PROCESSING                           │
 ├─────────────────────────────────────────────────────────────────────────┤
